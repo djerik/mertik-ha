@@ -1,0 +1,14 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "name": "Navn på gaspejs",
+          "host": "IP addresse"
+        },
+        "description": "Opsætning",
+        "title": "Enheder"
+      }
+    }
+  }
+}
