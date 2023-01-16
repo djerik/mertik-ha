@@ -11,5 +11,12 @@ Afterwards you can go to the Integrations sections and click the add integration
 
 It will search your local network for the module and add the entities.
 
+## Todo
+- Move mertik.py to a python module with own repo
+- Change I/O calls to async I/O calls
+- Add to HACS repository for even easier installation
+- Move Entities to a single Device / Platform
+- Implement Zero Conf / autodetect IP
+
 ## Changelog
 - 2023-01-15 Initial version
