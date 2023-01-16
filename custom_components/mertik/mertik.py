@@ -39,7 +39,7 @@ class Mertik:
 
         # Receive reply
         data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-        mac = getmacbyip("192.168.1.28")
+        mac = getmacbyip(addr)
         device = dict()
         device["address"] = addr
         device["mac"] = mac
