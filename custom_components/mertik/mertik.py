@@ -13,8 +13,8 @@ __version__ = "0.1.0"
 __author__ = "Tobias Laursen <djerik@gmail.com>"
 __all__ = []
 
-prefix = "0233303330333033303830"
-
+send_command_prefix = "0233303330333033303830"
+process_status_prefixes = ("303030300003", "030300000003")
 
 class Mertik:
     def __init__(self, ip):
@@ -146,23 +146,23 @@ class Mertik:
 
     def __sendCommand(self, msg):
         try:
-            self.client.send(bytearray.fromhex(prefix + msg))
+            self.client.send(bytearray.fromhex(send_command_prefix + msg))
         except socket.error:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect((self.ip, 2000))
-            self.client.send(bytearray.fromhex(prefix + msg))
+            self.client.send(bytearray.fromhex(send_command_prefix + msg))
 
         data = self.client.recv(1024)
         if len(data) == 0:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect((self.ip, 2000))
-            self.client.send(bytearray.fromhex(prefix + msg))
+            self.client.send(bytearray.fromhex(send_command_prefix + msg))
             data = self.client.recv(1024)
 
         tempData = str(data, "ascii")
         tempData = tempData[1:]
         tempData = re.sub("/\r/g", ";", tempData)
-        if tempData.startswith("303030300003"):
+        if tempData.startswith(process_status_prefixes):
             self.__processStatus(tempData)
 
     def __processStatus(self, statusStr):
