@@ -1,6 +1,6 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from homeassistant.components.light import LightEntity, ColorMode
+from homeassistant.components.light import LightEntity, ColorMode, ATTR_BRIGHTNESS
 
 from .const import DOMAIN
 
@@ -34,12 +34,14 @@ class MertikLightEntity(CoordinatorEntity, LightEntity):
     @property
     def brightness(self):
         """Return true if the device is on."""
-        return self._dataservice.dim_level
+        return self._dataservice.light_brightness
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
+        self.hass.async_add_executor_job(self._dataservice.set_light_brightness, int(kwargs.get(ATTR_BRIGHTNESS)))
         self._dataservice.async_set_updated_data(None)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
+        self._dataservice.light_off()
         self._dataservice.async_set_updated_data(None)
