@@ -70,8 +70,8 @@ class Mertik:
         return self._light_on
 
     @property
-    def dim_level(self) -> int:
-        return self._dim_level
+    def light_brightness(self) -> int:
+        return self._light_brightness
 
     def standBy(self):
         msg = "3136303003"
@@ -101,10 +101,24 @@ class Mertik:
         msg = "313003"
         self.__sendCommand(msg)
 
-    def set_light_dim(self, dim_level):
-        l = 36 + round(9 * dim_level)
-        # if (l >= 40) l++; // For some reason 40 should be skipped?...
-        msg = "33304645" + l + l + "030a"
+    def light_on(self):
+        msg = "3330303103"
+        self.__sendCommand(msg)
+
+    def light_off(self):
+        msg = "3330303003"
+        self.__sendCommand(msg)
+
+    def set_light_brightness(self, brightness) -> None:
+        if brightness is None:
+            self.light_on()
+            return
+
+        l = 36 + round((brightness / 255) * 10)
+        if l >= 40:
+            l += 1 # For some reason 40 should be skipped..?
+
+        msg = "33304645" + str(l) + str(l) + "030a"
         self.__sendCommand(msg)
 
     def set_eco(self):
@@ -185,9 +199,11 @@ class Mertik:
         self._aux_on = self.__fromBitStatus(statusBits, 12)
         self._light_on = self.__fromBitStatus(statusBits, 13)
 
-        self._dim_level = int("0x" + statusStr[20:22], 0) - 100 / 151
-        if self._dim_level < 0 or not self._light_on:
-            self._dim_level = 0
+        # Convert the range 100 -> 251 to 0 -> 255
+        self._light_brightness = round(((int("0x" + statusStr[20:22], 0) - 100) / 151) * 255)
+        
+        if self._light_brightness < 0 or not self._light_on:
+            self._light_brightness = 0
 
         self._ambient_temperature = int("0x" + statusStr[30:32], 0) / 10
 
