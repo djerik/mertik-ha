@@ -25,9 +25,7 @@ class MertikDataCoordinator(DataUpdateCoordinator):
 
     @property
     def is_on(self) -> bool:
-        return (
-            self.mertik.is_on or self.mertik.is_igniting
-        ) == True and self.mertik.is_shutting_down != True
+        return self.mertik.is_on or self.mertik.is_igniting
 
     def ignite_fireplace(self):
         self.mertik.ignite_fireplace()
