@@ -38,6 +38,8 @@ class MertikLightEntity(CoordinatorEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
+        self._dataservice.async_set_updated_data(None)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
+        self._dataservice.async_set_updated_data(None)

@@ -137,6 +137,7 @@ class Mertik:
         msg = "3136" + l + "03"
 
         self.__sendCommand(msg)
+        self.refresh_status()
 
     def __hex2bin(self, hex):
         return format(int(hex, 16), "b").zfill(8)
