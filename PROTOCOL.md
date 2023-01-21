@@ -1,9 +1,9 @@
 # Protocol description
 
-Every package starts with `02` (*STX: Start of text*) followed by the identifier, a type, the payload and ends with `03` (*ETX: End of Text*).
+Every package starts with `02` (*STX: Start of text*) followed by the identifier, a command, the payload and ends with `03` (*ETX: End of Text*).
 
 ```
-02 [IDENTIFIER] [TYPE] [PAYLOAD] 03
+02 [IDENTIFIER] [COMMAND] [PAYLOAD] 03
 ```
 
 | Identifier | HEX | Description |
@@ -14,7 +14,7 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 > TODO:
 > - Figure out how the HEX values are calculated
 
-| Type | HEX | Description |
+| Command | HEX | Description |
 |---|---|---|
 | [Date and time](#date-and-time) | `30 36` | Set or get the date and time |
 | [Light](#light) | `33 30` | Turn the light on, off or set its brightness |
@@ -135,7 +135,7 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 | [...] | `xx xx xx xx` | [...] |
 
 # Todo
-- Add more types
+- Add more commands
   - Set fireplace to on/off/eco/manual
   - Turn aux burner on/off
   - Get/set flame height
