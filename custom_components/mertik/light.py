@@ -38,10 +38,10 @@ class MertikLightEntity(CoordinatorEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        self.hass.async_add_executor_job(self._dataservice.set_light_brightness, int(kwargs.get(ATTR_BRIGHTNESS)))
+        await(self.hass.async_add_executor_job(self._dataservice.set_light_brightness, int(kwargs.get(ATTR_BRIGHTNESS))))
         self._dataservice.async_set_updated_data(None)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        self._dataservice.light_off()
+        await(self.hass.async_add_executor_job(self._dataservice.light_off))
         self._dataservice.async_set_updated_data(None)
