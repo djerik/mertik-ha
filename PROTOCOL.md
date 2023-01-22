@@ -27,13 +27,13 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 ### Request
 
 ```
-30 36 [ACTION] [DATE TIME: YYYY mm dd HH MM SS]
+[ACTION] [DATE TIME: xx xx xx xx xx xx xx xx xx xx xx xx xx xx]
 ```
 
 ### Response
 
 ```
-30 36 [DATE TIME: YYYY mm dd HH MM SS]
+[DATE TIME: xx xx xx xx xx xx xx xx xx xx xx xx xx xx]
 ```
 
 ### Values
@@ -45,28 +45,34 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 
 | Date time | HEX | Description |
 |---|---|---|
-| Year | `xx xx xx xx` | [...] |
-| Month | `xx xx` | [...] |
-| Day | `xx xx` | [...] |
-| Hour | `xx xx` | [...] |
-| Minute | `xx xx` | [...] |
-| Second | `xx xx` | [...] |
+| Year | `xx xx` | The year<br />*Without the leading two digits* |
+| Month | `xx xx` | The month |
+| Day | `xx xx` | The day of the month |
+| Weekday | `xx xx` | The day of the week<br />*Ranges from 1 (Monday) to 7 (Sunday)* |
+| Hour | `xx xx` | The hour |
+| Minute | `xx xx` | The minute |
+| Second | `xx xx` | The second |
 
-> TODO:
-> - Figure out how the HEX values are calculated
+Each decimal value is encoded to the `xx xx` value by first encoding it to ASCII and then to HEX. Decoding is the other way around. Below you can see en example how the date time `2023-01-21 22:14:47` is encoded/decoded.
+
+| | Year | Month | Day | Weekday | Hour | Minute | Second |
+|---|---|---|---|---|---|---|---|
+| Decimal | `23` | `1` | `21` | `6` | `22` | `14` | `47` |
+| ASCII | `17` | `01` | `15` | `06` | `16` | `0E` | `2F` |
+| HEX | `31 37` | `30 31` | `31 35` | `30 36` | `31 36` | `30 45` | `32 46` |
 
 ## Light
 
 ### Request
 
 ```
-33 30 [ACTION] [BRIGHTNESS (optional)]
+[ACTION] [BRIGHTNESS (optional)]
 ```
 
 ### Response
 
 ```
-33 30 [STATUS] [BRIGHTNESS]
+[STATUS] [BRIGHTNESS]
 ```
 
 ### Values
@@ -77,15 +83,15 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 | On | `30 31` | Turn the light on |
 | Set | `46 45` | Set the brightness |
 
-| Status | HEX | Description |
-|---|---|---|
-| Off | `30 30` | The light is off |
-| On | `30 31` | The light is on |
-
 | Brightness | HEX | Description |
 |---|---|---|
 | Off | `30 30` | Turn the light off using the set action |
 | Value | `xx xx` | The brightness of the light (between `36 33` and `46 42`) |
+
+| Status | HEX | Description |
+|---|---|---|
+| Off | `30 30` | The light is off |
+| On | `30 31` | The light is on |
 
 > TODO:
 > - Check min/max range
@@ -96,13 +102,13 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 ### Request
 
 ```
-44 31 [IDENTIFICATION: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx] 30 30 30 30
+[IDENTIFICATION: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx] 30 30 30 30
 ```
 
 ### Response
 
 ```
-44 31 [IDENTIFICATION: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx]
+[IDENTIFICATION: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx]
 ```
 
 ### Values
@@ -115,10 +121,6 @@ Every package starts with `02` (*STX: Start of text*) followed by the identifier
 | | `30 33` | Chair icon |
 | | `30 34` | Couch icon |
 | Fireplace name | `46 46` | The name of the fireplace |
-
-| [...] | HEX | Description |
-|---|---|---|
-| [...] | `xx` | [...] |
 
 | Features | HEX | Bitmask | Description |
 |---|---|---|---|
