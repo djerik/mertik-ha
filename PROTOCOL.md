@@ -1,18 +1,18 @@
-# Protocol description
+# Protocol documentation
 
-Every package starts with `02` (*STX: Start of text*) followed by the identifier, a command, the payload and ends with `03` (*ETX: End of Text*).
+Every package starts with `02` (*STX: Start of text*) followed by the prefix, a command, the payload and ends with `03` (*ETX: End of Text*).
 
 ```
-02 [IDENTIFIER] [COMMAND] [PAYLOAD] 03
+02 [PREFIX] [COMMAND] [PAYLOAD] 03
 ```
 
-| Identifier | HEX | Description |
+| Prefix | HEX | Description |
 |---|---|---|
-| Request | `33 30 33 30 33 30 33 30 38 30` | Use this identifier to send data to the WiFi-module |
-| Response | `30 33 30 33 30 30 30 30 30 30` | This identifier will be used when receiving a response for the request |
+| Request | `33 30 33 30 33 30 33 30 38 30` | Use this prefix to send data to the WiFi-module |
+| Response | `30 33 30 33 30 30 30 30 30 30` | This prefix will be used when receiving a response for the request |
 
 > TODO:
-> - Figure out how the HEX values are calculated
+> - Figure out how the prefix works
 
 | Command | HEX | Description |
 |---|---|---|
@@ -102,18 +102,18 @@ Each decimal value is encoded to the `xx xx` value by first encoding it to ASCII
 ### Request
 
 ```
-[IDENTIFICATION: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx] 30 30 30 30
+[SETTING: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx] 30 30 30 30
 ```
 
 ### Response
 
 ```
-[IDENTIFICATION: xx xx] [xx] [FEATURES: xx xx] [xx xx xx xx]
+[SETTING: xx xx] [???: xx] [FEATURES: xx xx] [xx xx xx xx]
 ```
 
 ### Values
 
-| Identification | HEX | Description |
+| Setting | HEX | Description |
 |---|---|---|
 | Icon | `30 30` | Oven icon |
 | | `30 31` | Single bed icon |
@@ -134,7 +134,7 @@ Each decimal value is encoded to the `xx xx` value by first encoding it to ASCII
 
 | ??? | HEX | Description |
 |---|---|---|
-| [...] | `xx xx xx xx` | [...] |
+| [...] | `xx` | [...] |
 
 # Todo
 - Add more commands
