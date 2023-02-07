@@ -59,9 +59,18 @@ class MertikDataCoordinator(DataUpdateCoordinator):
     def is_light_on(self) -> bool:
         return self.mertik.is_light_on
 
+    def light_on(self):
+        self.mertik.light_on()
+
+    def light_off(self):
+        self.mertik.light_off()
+
+    def set_light_brightness(self, brightness) -> None:
+        self.mertik.set_light_brightness(brightness)
+
     @property
-    def dim_level(self) -> int:
-        return self.mertik.dim_level
+    def light_brightness(self) -> int:
+        return self.mertik.light_brightness
 
     async def _async_update_data(self):
         self.mertik.refresh_status()
