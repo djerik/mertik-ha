@@ -16,10 +16,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     async_add_entities(entities)
 
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "sensor")
-    )
-
 
 class MertikFlameHeightEntity(CoordinatorEntity, NumberEntity):
     def __init__(self, hass, dataservice, entry_id, name):

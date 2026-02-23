@@ -24,10 +24,7 @@ async def async_setup_entry(
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    # Forward the setup to the sensor platform.
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "switch")
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, ["switch", "number", "sensor", "light"])
 
     return True
 
