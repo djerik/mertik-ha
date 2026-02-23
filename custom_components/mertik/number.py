@@ -1,24 +1,34 @@
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+"""Mertik Maxitrol number platform."""
 
 from homeassistant.components.number import NumberEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .mertikdatacoordinator import MertikDataCoordinator
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
-    dataservice = hass.data[DOMAIN].get(entry.entry_id)
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Mertik number entities from a config entry."""
+    dataservice: MertikDataCoordinator = entry.runtime_data
 
-    entities = []
-
-    entities.append(
-        MertikFlameHeightEntity(hass, dataservice, entry.entry_id, entry.data["name"])
+    async_add_entities(
+        [MertikFlameHeightEntity(dataservice, entry.entry_id, entry.data["name"])]
     )
 
-    async_add_entities(entities)
 
+class MertikFlameHeightEntity(CoordinatorEntity[MertikDataCoordinator], NumberEntity):
+    """Representation of a Mertik flame height number entity."""
 
-class MertikFlameHeightEntity(CoordinatorEntity, NumberEntity):
-    def __init__(self, hass, dataservice, entry_id, name):
+    def __init__(
+        self, dataservice: MertikDataCoordinator, entry_id: str, name: str
+    ) -> None:
+        """Initialize the flame height entity."""
         super().__init__(dataservice)
         self._dataservice = dataservice
         self._attr_name = name + " Flame Height"
@@ -28,13 +38,17 @@ class MertikFlameHeightEntity(CoordinatorEntity, NumberEntity):
 
     @property
     def native_value(self) -> float:
+        """Return the current flame height value."""
         return self._dataservice.get_flame_height()
 
     async def async_set_native_value(self, value: float) -> None:
-        await( self.hass.async_add_executor_job(self._dataservice.set_flame_height, int(value)))
+        """Set the flame height value."""
+        await self.hass.async_add_executor_job(
+            self._dataservice.set_flame_height, int(value)
+        )
         self._dataservice.async_set_updated_data(None)
 
     @property
     def icon(self) -> str:
-        """Icon of the entity."""
+        """Return the icon of the entity."""
         return "mdi:fire"

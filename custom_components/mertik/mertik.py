@@ -1,46 +1,41 @@
-from re import M
-import re
+"""Mertik Wifi Fireplace controller."""
+
 import socket
-import struct
-import sys
-import binascii
-
-# from pytest import console_main
-
-"Mertik Wifi Fireplace controller"
 
 __version__ = "0.1.0"
 __author__ = "Tobias Laursen <djerik@gmail.com>"
 __all__ = []
 
-send_command_prefix = "0233303330333033303830"
-process_status_prefixes = ("303030300003", "030300000003")
+SEND_COMMAND_PREFIX = "0233303330333033303830"
+PROCESS_STATUS_PREFIXES = ("303030300003", "030300000003")
+
 
 class Mertik:
     def __init__(self, ip):
         self.ip = ip
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Internet
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.settimeout(3)
         self.client.connect((self.ip, 2000))
         self.refresh_status()
 
+    @staticmethod
     def get_devices():
         # Setup receiver
-        UDP_PORT = 30719
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Internet  # UDP
-        sock.bind(("", UDP_PORT))
+        udp_port = 30719
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(("", udp_port))
 
         # Send broadcast
-        UDP_PORT = 30718
-        MESSAGE = "000100f6"
-        hexstring = bytearray.fromhex(MESSAGE)
+        udp_port = 30718
+        message = "000100f6"
+        hexstring = bytearray.fromhex(message)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.sendto(hexstring, ("<broadcast>", 30718))
+        sock.sendto(hexstring, ("<broadcast>", udp_port))
 
         # Receive reply
-        data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+        data, addr = sock.recvfrom(1024)
         mac = getmacbyip(addr)
-        device = dict()
+        device = {}
         device["address"] = addr
         device["mac"] = mac
         return device
@@ -73,50 +68,45 @@ class Mertik:
     def dim_level(self) -> int:
         return self._dim_level
 
-    def standBy(self):
+    def stand_by(self):
         msg = "3136303003"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def aux_on(self):
-        # this.getDriver().triggerDualFlameToggle.trigger(this, {}, {});
-        # this.getDriver().triggerDualFlameOn.trigger(this, {}, {});
         msg = "32303031030a"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def aux_off(self):
-        # this.getDriver().triggerDualFlameToggle.trigger(this, {}, {});
-        # this.getDriver().triggerDualFlameOff.trigger(this, {}, {});
         msg = "32303030030a"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def ignite_fireplace(self):
         msg = "314103"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def refresh_status(self):
         msg = "303303"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def guard_flame_off(self):
         msg = "313003"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def set_light_dim(self, dim_level):
-        l = 36 + round(9 * dim_level)
-        # if (l >= 40) l++; // For some reason 40 should be skipped?...
-        msg = "33304645" + l + l + "030a"
-        self.__sendCommand(msg)
+        level = format(36 + round(9 * dim_level), "02x").upper()
+        msg = "33304645" + level + level + "030a"
+        self.__send_command(msg)
 
     def set_eco(self):
         msg = "4233303103"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def set_manual(self):
         msg = "423003"
-        self.__sendCommand(msg)
+        self.__send_command(msg)
 
     def get_flame_height(self) -> int:
-        return self.flameHeight
+        return self.flame_height
 
     def set_flame_height(self, flame_height) -> None:
         steps = [
@@ -133,94 +123,65 @@ class Mertik:
             "4633",
             "4646",
         ]
-        l = steps[flame_height - 1]
-        msg = "3136" + l + "03"
-
-        self.__sendCommand(msg)
+        step = steps[flame_height - 1]
+        msg = "3136" + step + "03"
+        self.__send_command(msg)
         self.refresh_status()
 
-    def __hex2bin(self, hex):
-        return format(int(hex, 16), "b").zfill(8)
+    def __hex_to_bin(self, hex_val):
+        return format(int(hex_val, 16), "b").zfill(8)
 
-    def __fromBitStatus(self, hex, index):
-        return self.__hex2bin(hex)[index : index + 1] == "1"
+    def __from_bit_status(self, hex_val, index):
+        return self.__hex_to_bin(hex_val)[index : index + 1] == "1"
 
-    def __sendCommand(self, msg):
+    def close(self) -> None:
+        """Close the socket connection."""
+        self.client.close()
+
+    def __reconnect(self) -> None:
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.settimeout(3)
+        self.client.connect((self.ip, 2000))
+
+    def __send_command(self, msg: str) -> None:
+        payload = bytearray.fromhex(SEND_COMMAND_PREFIX + msg)
         try:
-            self.client.send(bytearray.fromhex(send_command_prefix + msg))
-        except socket.error:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client.connect((self.ip, 2000))
-            self.client.send(bytearray.fromhex(send_command_prefix + msg))
+            self.client.send(payload)
+        except OSError:
+            self.__reconnect()
+            self.client.send(payload)
 
         data = self.client.recv(1024)
         if len(data) == 0:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.client.connect((self.ip, 2000))
-            self.client.send(bytearray.fromhex(send_command_prefix + msg))
-            data = self.client.recv(1024)
+            # Connection was closed by peer — reconnect for next command.
+            self.__reconnect()
+            return
 
-        tempData = str(data, "ascii")
-        tempData = tempData[1:]
-        tempData = re.sub("/\r/g", ";", tempData)
-        if tempData.startswith(process_status_prefixes):
-            self.__processStatus(tempData)
+        temp_data = str(data, "ascii")[1:]
+        temp_data = temp_data.replace("\r", ";")
+        if temp_data.startswith(PROCESS_STATUS_PREFIXES):
+            self.__process_status(temp_data)
 
-    def __processStatus(self, statusStr):
-        tempSub = statusStr[14:16]
-        tempSub = "0x" + tempSub
-        flameHeight = int(tempSub, 0)
+    def __process_status(self, status_str):
+        temp_sub = "0x" + status_str[14:16]
+        flame_height = int(temp_sub, 0)
 
-        if flameHeight <= 123:
-            self.flameHeight = 0
+        if flame_height <= 123:
+            self.flame_height = 0
             self.on = False
         else:
-            self.flameHeight = round(((flameHeight - 128) / 128) * 12) + 1
+            self.flame_height = round(((flame_height - 128) / 128) * 12) + 1
             self.on = True
 
-        mode = statusStr[24:25]
-        statusBits = statusStr[16:20]
-        self._shutting_down = self.__fromBitStatus(statusBits, 7)
-        self._guard_flame_on = self.__fromBitStatus(statusBits, 8)
-        self._igniting = self.__fromBitStatus(statusBits, 11)
-        self._aux_on = self.__fromBitStatus(statusBits, 12)
-        self._light_on = self.__fromBitStatus(statusBits, 13)
+        status_bits = status_str[16:20]
+        self._shutting_down = self.__from_bit_status(status_bits, 7)
+        self._guard_flame_on = self.__from_bit_status(status_bits, 8)
+        self._igniting = self.__from_bit_status(status_bits, 11)
+        self._aux_on = self.__from_bit_status(status_bits, 12)
+        self._light_on = self.__from_bit_status(status_bits, 13)
 
-        self._dim_level = int("0x" + statusStr[20:22], 0) - 100 / 151
+        self._dim_level = (int("0x" + status_str[20:22], 0) - 100) / 151
         if self._dim_level < 0 or not self._light_on:
             self._dim_level = 0
 
-        self._ambient_temperature = int("0x" + statusStr[30:32], 0) / 10
-
-        # print("Status update!!")
-        # print("Fireplace on: " + str(self.on))
-        # print("Flame height: " + str(flameHeight))
-        # print("Guard flame on: " + str(guardFlameOn))
-        # print("Igniting: " + str(igniting))
-        # print("Shutting down: " + str(shuttingDown))
-        # print("Aux on: " + str(self.auxOn))
-        # print("Light on: " + str(self._light_on))
-        # print("Dim level: " + str(self._dim_level))
-        #        console.log("Ambient temp: " + ambientTemp)
-
-        # opMode = "on"
-
-
-""""
-        if self.on == False and igniting == False:
-            if guardFlameOn and shuttingDown == False:
-                opMode = "stand_by"
-            else:
-                opMode = "off"
-        else:
-            if mode == "2":
-                self.offToEco = False
-                opMode = "eco"
-            else:
-                if self.offToEco:
-                    self.setEco()
-                    opMode = "eco"
-
-        print("Fire control mode: " + mode)
-        print("Operation mode: " + opMode)
-"""
+        self._ambient_temperature = int("0x" + status_str[28:32], 0) / 10
