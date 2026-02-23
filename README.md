@@ -19,4 +19,5 @@ It will search your local network for the module and add the entities.
 - Implement Zero Conf / autodetect IP
 
 ## Changelog
+- 2026-02-24 Bug fixes due to breaking HA changes
 - 2023-01-15 Initial version
