@@ -2,7 +2,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from homeassistant.components.sensor import SensorEntity
 
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 
 from .const import DOMAIN
 
@@ -40,4 +40,4 @@ class MertikAmbientTemperatureSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def unit_of_measurement(self) -> str:
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
